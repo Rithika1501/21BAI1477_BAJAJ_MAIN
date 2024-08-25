@@ -1,23 +1,32 @@
 const express = require('express');
-const findFreePort = require('find-free-port');
+const path = require('path');
 const app = express();
+
 app.use(express.json());
 
-// Serve the frontend
-const path = require('path');
+// Serve the static frontend files
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Route: /bfhl | Method: POST
 app.post('/bfhl', (req, res) => {
     const { data } = req.body;
-    const user_id = "your_name_ddmmyyyy"; // replace with actual user_id
-    const email = "your_email@college.com"; // replace with actual email
-    const roll_number = "your_roll_number"; // replace with actual roll number
+    
+    // Replace these with actual user details
+    const user_id = "your_name_ddmmyyyy"; 
+    const email = "your_email@college.com"; 
+    const roll_number = "your_roll_number"; 
 
+    // Filter out numbers and alphabets from the data
     const numbers = data.filter(item => !isNaN(item));
     const alphabets = data.filter(item => isNaN(item));
-    const highest_lowercase_alphabet = alphabets.filter(item => item === item.toLowerCase()).sort().slice(-1);
+    
+    // Find the highest lowercase alphabet
+    const highest_lowercase_alphabet = alphabets
+        .filter(item => item === item.toLowerCase())
+        .sort()
+        .slice(-1);
 
+    // Send the response
     res.json({
         is_success: true,
         user_id,
@@ -36,16 +45,14 @@ app.get('/bfhl', (req, res) => {
     });
 });
 
-// Start the server and find an available port
-const DEFAULT_PORT = 3000;
+// Handle all other routes by sending back the index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
 
-findFreePort(DEFAULT_PORT, (err, freePort) => {
-    if (err) {
-        console.error('Error finding a free port:', err);
-        process.exit(1);
-    }
+// Start the server on a specified or available port
+const PORT = process.env.PORT || 3000;
 
-    app.listen(freePort, () => {
-        console.log(`Server is running on port ${freePort}`);
-    });
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
